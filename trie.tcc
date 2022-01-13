@@ -1,11 +1,13 @@
-#ifndef DICT_TRIE_TCC_
-#define DICT_TRIE_TCC_
+#ifndef TRIE_TCC_
+#define TRIE_TCC_
 
 #include <vector>
+#include <map>
 
 #include "node.tcc"
 
 using std::vector;
+using std::map;
 
 /*!
  * Trie.
@@ -18,14 +20,17 @@ class Trie {
     void add(vector<uint8_t>&);
     Node<alphabetSize>* find(vector<uint8_t>&);
     void remove(vector<uint8_t>&);
-    void iterate(void);
+    vector<vector<uint8_t>> iterate(void);
+    map<size_t, size_t> count(void);
 
   private:
     Node<alphabetSize>* _root = NULL;
 
     void _delete(Node<alphabetSize>*);
     bool _remove(Node<alphabetSize>*, vector<uint8_t>&, size_t);
-    void _iterate(Node<alphabetSize>*, vector<uint8_t>&);
+    void _iterate(
+      Node<alphabetSize>*, vector<uint8_t>&, vector<vector<uint8_t>>&);
+    void _count(Node<alphabetSize>*, map<size_t, size_t>&);
 };
 
 
@@ -65,25 +70,31 @@ bool Trie<alphabetSize>::_remove(
   return result;
 }
 
-#include <iostream>
-inline void print(vector<uint8_t>& word) {
-  for (uint8_t letter: word) {
-    std::cout << (int)letter << ' ';
-  }
-  std::cout << '\n';
-}
-
 template <uint8_t alphabetSize>
 void Trie<alphabetSize>::_iterate(
-    Node<alphabetSize>* node, vector<uint8_t>& word) {
+    Node<alphabetSize>* node, vector<uint8_t>& word,
+    vector<vector<uint8_t>>& result) {
   for (size_t i = 0; i < node->size; i++) {
-    print(word);
+    result.push_back(word);
   }
   for (size_t i = 0; i < alphabetSize; i++) {
     if (node->child[i]) {
       word.push_back(i);
-      _iterate(node->child[i], word);
+      _iterate(node->child[i], word, result);
       word.pop_back();
+    }
+  }
+}
+
+template <uint8_t alphabetSize>
+void Trie<alphabetSize>::_count(
+    Node<alphabetSize>* node, map<size_t, size_t>& counts) {
+  if (node->size) {
+    counts[node->size]++;
+  }
+  for (size_t i = 0; i < alphabetSize; i++) {
+    if (node->child[i]) {
+      _count(node->child[i], counts);
     }
   }
 }
@@ -154,9 +165,23 @@ void Trie<alphabetSize>::remove(vector<uint8_t>& word) {
 }
 
 template <uint8_t alphabetSize>
-void Trie<alphabetSize>::iterate(void) {
+vector<vector<uint8_t>> Trie<alphabetSize>::iterate(void) {
   vector<uint8_t> word;
-  _iterate(_root, word);
+  vector<vector<uint8_t>> result;
+  _iterate(_root, word, result);
+  return result;
+}
+
+/*!
+ * Count statistics.
+ *
+ * \return Count statistics.
+ */
+template <uint8_t alphabetSize>
+map<size_t, size_t> Trie<alphabetSize>::count(void) {
+  map<size_t, size_t> counts;
+  _count(_root, counts);
+  return counts;
 }
 
 #endif

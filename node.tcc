@@ -1,5 +1,5 @@
-#ifndef DICT_TRIE_NODE_TCC_
-#define DICT_TRIE_NODE_TCC_
+#ifndef TRIE_NODE_TCC_
+#define TRIE_NODE_TCC_
 
 #include <array>
 
@@ -46,4 +46,5 @@ bool Node<alphabetSize>::isEmpty(void) {
   }
   return true;
 }
+
 #endif
