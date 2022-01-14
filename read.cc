@@ -1,6 +1,7 @@
 #include <fstream>
 #include <ios>
 #include <iostream>
+#include <map>
 #include <vector>
 
 #include "trie.tcc"
@@ -8,6 +9,7 @@
 using std::cout;
 using std::ifstream;
 using std::ios;
+using std::map;
 using std::pair;
 using std::vector;
 
@@ -20,11 +22,8 @@ vector<uint8_t> readWord(ifstream& handle, size_t size) {
   return vector<uint8_t>(buffer, buffer + size);
 }
 
-void printWord(vector<uint8_t>& word) {
-  for (uint8_t letter: word) {
-    cout << (int)letter << ' ';
-  }
-  cout << '\n';
+void visit(vector<uint8_t>&, Leaf<char>& leaf, map<size_t, size_t>& result) {
+  result[leaf.count]++;
 }
 
 void printCounts(map<size_t, size_t>& counts) {
@@ -50,7 +49,7 @@ int main(void) {
   }
   handle.close();
 
-  map<size_t, size_t> counts = trie.count();
+  map<size_t, size_t> counts = trie.traverse(visit);
   printCounts(counts);
 
   return 0;
