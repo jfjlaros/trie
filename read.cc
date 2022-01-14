@@ -40,12 +40,12 @@ void printCounts(map<size_t, size_t>& counts) {
 
 
 int main(void) {
-  Trie<4> trie;
+  Trie<4, Leaf<char>> trie;
 
   ifstream handle(file, ios::in | ios::binary);
   while (!handle.eof()) {
     vector<uint8_t> word = readWord(handle, 24);
-    trie.add(word);
+    trie.add(word, '\0');
     handle.peek();
   }
   handle.close();

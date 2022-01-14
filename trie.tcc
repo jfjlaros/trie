@@ -12,44 +12,52 @@ using std::map;
 /*!
  * Trie.
  */
-template <uint8_t alphabetSize>
+template <uint8_t alphabetSize, class T>
 class Trie {
   public:
     Trie(void);
     ~Trie(void);
-    void add(vector<uint8_t>&);
-    Node<alphabetSize>* find(vector<uint8_t>&);
+    template <class U>
+      void add(vector<uint8_t>&, U);
+    Node<alphabetSize, T>* find(vector<uint8_t>&);
     void remove(vector<uint8_t>&);
     vector<vector<uint8_t>> iterate(void);
     map<size_t, size_t> count(void);
 
   private:
-    Node<alphabetSize>* _root = NULL;
+    Node<alphabetSize, T>* _root = NULL;
 
-    void _delete(Node<alphabetSize>*);
-    bool _remove(Node<alphabetSize>*, vector<uint8_t>&, size_t);
+    void _delete(Node<alphabetSize, T>*);
+    bool _remove(Node<alphabetSize, T>*, vector<uint8_t>&, size_t);
     void _iterate(
-      Node<alphabetSize>*, vector<uint8_t>&, vector<vector<uint8_t>>&);
-    void _count(Node<alphabetSize>*, map<size_t, size_t>&);
+      Node<alphabetSize, T>*, vector<uint8_t>&, vector<vector<uint8_t>>&);
+    void _count(Node<alphabetSize, T>*, map<size_t, size_t>&);
 };
 
 
-template <uint8_t alphabetSize>
-void Trie<alphabetSize>::_delete(Node<alphabetSize>* node) {
-  for (Node<alphabetSize>* child: node->child) {
+template <uint8_t alphabetSize, class T>
+void Trie<alphabetSize, T>::_delete(Node<alphabetSize, T>* node) {
+  for (Node<alphabetSize, T>* child: node->child) {
     if (child) {
       _delete(child);
     }
   }
+  if (node->leaf) {
+    delete node->leaf;
+  }
   delete node;
 }
 
-template <uint8_t alphabetSize>
-bool Trie<alphabetSize>::_remove(
-    Node<alphabetSize>* node, vector<uint8_t>& word, size_t start) {
+template <uint8_t alphabetSize, class T>
+bool Trie<alphabetSize, T>::_remove(
+    Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t start) {
   if (start == word.size()) {
-    if (node->size) {
-      node->size--;
+    if (node->leaf) {
+      node->leaf->pop();
+      if (!node->leaf->count) {
+        delete node->leaf;
+        node->leaf = NULL;
+      }
       return true;
     }
     return false;
@@ -70,12 +78,14 @@ bool Trie<alphabetSize>::_remove(
   return result;
 }
 
-template <uint8_t alphabetSize>
-void Trie<alphabetSize>::_iterate(
-    Node<alphabetSize>* node, vector<uint8_t>& word,
+template <uint8_t alphabetSize, class T>
+void Trie<alphabetSize, T>::_iterate(
+    Node<alphabetSize, T>* node, vector<uint8_t>& word,
     vector<vector<uint8_t>>& result) {
-  for (size_t i = 0; i < node->size; i++) {
-    result.push_back(word);
+  if (node->leaf) {
+    for (size_t i = 0; i < node->leaf->count; i++) {
+      result.push_back(word);
+    }
   }
   for (size_t i = 0; i < alphabetSize; i++) {
     if (node->child[i]) {
@@ -86,11 +96,11 @@ void Trie<alphabetSize>::_iterate(
   }
 }
 
-template <uint8_t alphabetSize>
-void Trie<alphabetSize>::_count(
-    Node<alphabetSize>* node, map<size_t, size_t>& counts) {
-  if (node->size) {
-    counts[node->size]++;
+template <uint8_t alphabetSize, class T>
+void Trie<alphabetSize, T>::_count(
+    Node<alphabetSize, T>* node, map<size_t, size_t>& counts) {
+  if (node->leaf) {
+    counts[node->leaf->count]++;
   }
   for (size_t i = 0; i < alphabetSize; i++) {
     if (node->child[i]) {
@@ -103,16 +113,16 @@ void Trie<alphabetSize>::_count(
 /*!
  * Constructor.
  */
-template <uint8_t alphabetSize>
-Trie<alphabetSize>::Trie(void) {
-  _root = new Node<alphabetSize>;
+template <uint8_t alphabetSize, class T>
+Trie<alphabetSize, T>::Trie(void) {
+  _root = new Node<alphabetSize, T>;
 }
 
 /*!
  * Destructor.
  */
-template <uint8_t alphabetSize>
-Trie<alphabetSize>::~Trie(void) {
+template <uint8_t alphabetSize, class T>
+Trie<alphabetSize, T>::~Trie(void) {
   _delete(_root);
 }
 
@@ -120,17 +130,22 @@ Trie<alphabetSize>::~Trie(void) {
  * Add a word.
  *
  * \param word Word.
+ * \param data Data.
  */
-template <uint8_t alphabetSize>
-void Trie<alphabetSize>::add(vector<uint8_t>& word) {
-  Node<alphabetSize>* p = _root;
+template <uint8_t alphabetSize, class T>
+template <class U>
+void Trie<alphabetSize, T>::add(vector<uint8_t>& word, U data) {
+  Node<alphabetSize, T>* p = _root;
   for (uint8_t letter: word) {
     if (!p->child[letter]) {
-      p->child[letter] = new Node<alphabetSize>;
+      p->child[letter] = new Node<alphabetSize, T>;
     }
     p = p->child[letter];
   }
-  p->size++;
+  if (!p->leaf) {
+    p->leaf = new T;
+  }
+  p->leaf->push(data);
 }
 
 /*!
@@ -140,9 +155,9 @@ void Trie<alphabetSize>::add(vector<uint8_t>& word) {
  *
  * \return End of `word` node when found, `NULL` otherwise.
  */
-template <uint8_t alphabetSize>
-Node<alphabetSize>* Trie<alphabetSize>::find(vector<uint8_t>& word) {
-  Node<alphabetSize>* p = _root;
+template <uint8_t alphabetSize, class T>
+Node<alphabetSize, T>* Trie<alphabetSize, T>::find(vector<uint8_t>& word) {
+  Node<alphabetSize, T>* p = _root;
   for (uint8_t letter: word) {
     if (!p->child[letter]) {
       return NULL;
@@ -159,13 +174,13 @@ Node<alphabetSize>* Trie<alphabetSize>::find(vector<uint8_t>& word) {
  *
  * \return `true` if the last occurrence of `word` is removed.
  */
-template <uint8_t alphabetSize>
-void Trie<alphabetSize>::remove(vector<uint8_t>& word) {
+template <uint8_t alphabetSize, class T>
+void Trie<alphabetSize, T>::remove(vector<uint8_t>& word) {
   _remove(_root, word, 0);
 }
 
-template <uint8_t alphabetSize>
-vector<vector<uint8_t>> Trie<alphabetSize>::iterate(void) {
+template <uint8_t alphabetSize, class T>
+vector<vector<uint8_t>> Trie<alphabetSize, T>::iterate(void) {
   vector<uint8_t> word;
   vector<vector<uint8_t>> result;
   _iterate(_root, word, result);
@@ -177,8 +192,8 @@ vector<vector<uint8_t>> Trie<alphabetSize>::iterate(void) {
  *
  * \return Count statistics.
  */
-template <uint8_t alphabetSize>
-map<size_t, size_t> Trie<alphabetSize>::count(void) {
+template <uint8_t alphabetSize, class T>
+map<size_t, size_t> Trie<alphabetSize, T>::count(void) {
   map<size_t, size_t> counts;
   _count(_root, counts);
   return counts;

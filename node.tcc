@@ -2,41 +2,48 @@
 #define TRIE_NODE_TCC_
 
 #include <array>
+#include <forward_list>
 
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "leaf.tcc"
+
 using std::array;
 
-template <uint8_t alphabetSize>
+
+/*!
+ * Node.
+ */
+template <uint8_t alphabetSize, class T>
 class Node {
   public:
     array<Node*, alphabetSize> child;
-    bool isEmpty(void);
-    size_t size;
+    T* leaf = NULL;
+
     Node(void);
+    bool isEmpty(void);
 };
 
 
 /*!
  * Constructor.
  */
-template <uint8_t alphabetSize>
-Node<alphabetSize>::Node(void) {
+template <uint8_t alphabetSize, class T>
+Node<alphabetSize, T>::Node(void) {
   for (uint8_t i = 0; i < alphabetSize; i++) {
     child[i] = NULL;
   }
-  size = 0;
 }
 
 /*!
  * Check whether the node is empty.
  *
- * return `true` if node is empty, `false` otherwise.
+ * \return `true` if node is empty, `false` otherwise.
  */
-template <uint8_t alphabetSize>
-bool Node<alphabetSize>::isEmpty(void) {
-  if (size) {
+template <uint8_t alphabetSize, class T>
+bool Node<alphabetSize, T>::isEmpty(void) {
+  if (leaf) {
     return false;
   }
   for (uint8_t i = 0; i < alphabetSize; i++) {
