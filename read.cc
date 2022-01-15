@@ -22,7 +22,7 @@ vector<uint8_t> readWord(ifstream& handle, size_t size) {
   return vector<uint8_t>(buffer, buffer + size);
 }
 
-void visit(vector<uint8_t>&, Leaf<char>& leaf, map<size_t, size_t>& result) {
+void count(vector<uint8_t>&, Leaf<char>& leaf, map<size_t, size_t>& result) {
   result[leaf.count]++;
 }
 
@@ -44,12 +44,12 @@ int main(void) {
   ifstream handle(file, ios::in | ios::binary);
   while (!handle.eof()) {
     vector<uint8_t> word = readWord(handle, 24);
-    trie.add(word, '\0');
+    trie.add(word);
     handle.peek();
   }
   handle.close();
 
-  map<size_t, size_t> counts = trie.traverse(visit);
+  map<size_t, size_t> counts = trie.traverse(count);
   printCounts(counts);
 
   return 0;

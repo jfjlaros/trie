@@ -11,8 +11,9 @@ class Trie {
   public:
     Trie(void);
     ~Trie(void);
+    void add(vector<uint8_t>&);
     template <class U>
-      void add(vector<uint8_t>&, U);
+      void add(vector<uint8_t>&, U&);
     void remove(vector<uint8_t>&);
     Node<alphabetSize, T>* find(vector<uint8_t>&);
     template <class R>
@@ -43,11 +44,25 @@ Trie<alphabetSize, T>::~Trie(void) {
  * Add a word.
  *
  * \param word Word.
+ *
+ * \return Leaf.
+ */
+template <uint8_t alphabetSize, class T>
+void Trie<alphabetSize, T>::add(vector<uint8_t>& word) {
+  _add(_root, word);
+}
+
+/*!
+ * Add a word.
+ *
+ * \param word Word.
  * \param data Data.
+ *
+ * \return Leaf.
  */
 template <uint8_t alphabetSize, class T>
 template <class U>
-void Trie<alphabetSize, T>::add(vector<uint8_t>& word, U data) {
+void Trie<alphabetSize, T>::add(vector<uint8_t>& word, U& data) {
   _add(_root, word, data);
 }
 

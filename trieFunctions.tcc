@@ -31,10 +31,11 @@ void _delete(Node<alphabetSize, T>* node) {
  *
  * \param node Root.
  * \param word Word.
- * \param data Data.
+ *
+ * \return Leaf.
  */
-template <uint8_t alphabetSize, class T, class U>
-void _add(Node<alphabetSize, T>* node, vector<uint8_t>& word, U data) {
+template <uint8_t alphabetSize, class T>
+T* _add(Node<alphabetSize, T>* node, vector<uint8_t>& word) {
   for (uint8_t letter: word) {
     if (!node->child[letter]) {
       node->child[letter] = new Node<alphabetSize, T>;
@@ -44,7 +45,22 @@ void _add(Node<alphabetSize, T>* node, vector<uint8_t>& word, U data) {
   if (!node->leaf) {
     node->leaf = new T;
   }
-  node->leaf->push(data);
+  node->leaf->count++;
+
+  return node->leaf;
+}
+
+/*
+ * Add a word to a (sub)trie.
+ *
+ * \param node Root.
+ * \param word Word.
+ * \param data Data.
+ */
+template <uint8_t alphabetSize, class T, class U>
+void _add(Node<alphabetSize, T>* node, vector<uint8_t>& word, U& data) {
+  T* leaf = _add(node, word);
+  leaf->add(data);
 }
 
 /*
@@ -61,7 +77,8 @@ bool _remove(
     Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position) {
   if (position == word.size()) {
     if (node->leaf) {
-      node->leaf->pop();
+      node->leaf->count--;
+      node->leaf->remove();
       if (!node->leaf->count) {
         delete node->leaf;
         node->leaf = NULL;
