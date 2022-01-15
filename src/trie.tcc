@@ -18,6 +18,7 @@ class Trie {
     Node<alphabetSize, T>* find(vector<uint8_t>&);
     template <class R>
       R traverse(void (*)(vector<uint8_t>&, T&, R&));
+    void traverse(void (*)(vector<uint8_t>&, T&));
 
   private:
     Node<alphabetSize, T>* _root = NULL;
@@ -102,6 +103,19 @@ R Trie<alphabetSize, T>::traverse(void (*visit)(vector<uint8_t>&, T&, R&)) {
   R result;
   _traverse(_root, word, visit, result);
   return result;
+}
+
+/*!
+ * Traverse.
+ *
+ * \param visit Callback function.
+ *
+ * \return Traversal result.
+ */
+template <uint8_t alphabetSize, class T>
+void Trie<alphabetSize, T>::traverse(void (*visit)(vector<uint8_t>&, T&)) {
+  vector<uint8_t> word;
+  _traverse(_root, word, visit);
 }
 
 #endif

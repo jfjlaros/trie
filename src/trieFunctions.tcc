@@ -127,6 +127,7 @@ Node<alphabetSize, T>* _find(
  * Traverse a (sub)trie.
  *
  * \param node Root.
+ * \param word Word.
  * \param visit Callback function.
  * \param result Traversal result.
  */
@@ -141,6 +142,29 @@ void _traverse(
     if (node->child[i]) {
       word.push_back(i);
       _traverse(node->child[i], word, visit, result);
+      word.pop_back();
+    }
+  }
+}
+
+/*
+ * Traverse a (sub)trie.
+ *
+ * \param node Root.
+ * \param word Word.
+ * \param visit Callback function.
+ */
+template <uint8_t alphabetSize, class T>
+void _traverse(
+    Node<alphabetSize, T>* node, vector<uint8_t>& word,
+    void (*visit)(vector<uint8_t>&, T&)) {
+  if (node->leaf) {
+    visit(word, *node->leaf);
+  }
+  for (size_t i = 0; i < alphabetSize; i++) {
+    if (node->child[i]) {
+      word.push_back(i);
+      _traverse(node->child[i], word, visit);
       word.pop_back();
     }
   }

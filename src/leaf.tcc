@@ -13,4 +13,13 @@ class Leaf {
     virtual void remove(void) {}
 };
 
+template <>
+class Leaf<void> {
+  public:
+    size_t count = 0;
+
+    virtual void add(void) {}
+    virtual void remove(void) {}
+};
+
 #endif
