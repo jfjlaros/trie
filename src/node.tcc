@@ -46,8 +46,8 @@ bool Node<alphabetSize, T>::isEmpty(void) {
   if (leaf) {
     return false;
   }
-  for (uint8_t i = 0; i < alphabetSize; i++) {
-    if (child[i]) {
+  for (Node<alphabetSize, T>* c: child) {
+    if (c) {
       return false;
     }
   }

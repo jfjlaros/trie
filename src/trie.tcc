@@ -19,6 +19,8 @@ class Trie {
     template <class R>
       R traverse(void (*)(vector<uint8_t>&, T&, R&));
     void traverse(void (*)(vector<uint8_t>&, T&));
+    template <class R>
+      R hamming(vector<uint8_t>&, int, void (*)(vector<uint8_t>&, T&, R&));
 
   private:
     Node<alphabetSize, T>* _root = NULL;
@@ -116,6 +118,26 @@ template <uint8_t alphabetSize, class T>
 void Trie<alphabetSize, T>::traverse(void (*visit)(vector<uint8_t>&, T&)) {
   vector<uint8_t> word;
   _traverse(_root, word, visit);
+}
+
+/*!
+ * Hamming.
+ *
+ * \param word Word.
+ * \param distance Maximum distance.
+ * \param visit Callback function.
+ *
+ * \return Traversal result.
+ */
+template <uint8_t alphabetSize, class T>
+template <class R>
+R Trie<alphabetSize, T>::hamming(
+    vector<uint8_t>& word, int distance,
+    void (*visit)(vector<uint8_t>&, T&, R&)) {
+  vector<uint8_t> path;
+  R result;
+  _hamming(_root, word, 0, distance, path, visit, result);
+  return result;
 }
 
 #endif

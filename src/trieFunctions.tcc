@@ -170,4 +170,45 @@ void _traverse(
   }
 }
 
+/*
+ * Find all words within Hamming distance `distance`.
+ *
+ * \param node Root.
+ * \param word Word.
+ * \param position Position in `word`.
+ * \param distance Maximum distance.
+ * \param path Path.
+ * \param visit Callback function.
+ * \param result Traversal result.
+ */
+template <uint8_t alphabetSize, class T, class R>
+void _hamming(
+    Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position,
+    int distance, vector<uint8_t>& path,
+    void (*visit)(vector<uint8_t>&, T&, R&), R& result) {
+  if (distance < 0) {
+    return;
+  }
+  if (position == word.size()) {
+    if (node->leaf) {
+      visit(path, *node->leaf, result);
+    }
+    return;
+  }
+
+  for (size_t i = 0; i < alphabetSize; i++) {
+    if (node->child[i]) {
+      int penalty = 0;
+      if (i != word[position]) {
+        penalty = 1;
+      }
+      path.push_back(i);
+      _hamming(
+        node->child[i], word, position + 1, distance - penalty, path, visit,
+        result);
+      path.pop_back();
+    }
+  }
+}
+
 #endif
