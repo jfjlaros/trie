@@ -1,6 +1,8 @@
 #ifndef TRIE_TCC_
 #define TRIE_TCC_
 
+#include "CPP20Coroutines/include/generator.hpp"
+
 #include "trieFunctions.tcc"
 
 /*!
@@ -21,6 +23,8 @@ class Trie {
     void traverse(void (*)(vector<uint8_t>&, T&));
     template <class R>
       R hamming(vector<uint8_t>&, int, void (*)(vector<uint8_t>&, T&, R&));
+    generator<pair<vector<uint8_t>, T>> walk(void);
+    generator<pair<vector<uint8_t>, T>> hamming(vector<uint8_t>&, int);
 
   private:
     Node<alphabetSize, T>* _root = NULL;
@@ -138,6 +142,19 @@ R Trie<alphabetSize, T>::hamming(
   R result;
   _hamming(_root, word, 0, distance, path, visit, result);
   return result;
+}
+
+template <uint8_t alphabetSize, class T>
+generator<pair<vector<uint8_t>, T>> Trie<alphabetSize, T>::walk(void) {
+  vector<uint8_t> path;
+  co_yield _walk(_root, path);
+}
+
+template <uint8_t alphabetSize, class T>
+generator<pair<vector<uint8_t>, T>> Trie<alphabetSize, T>::hamming(
+    vector<uint8_t>& word, int distance) {
+  vector<uint8_t> path;
+  co_yield _hamming(_root, word, 0, distance, path);
 }
 
 #endif

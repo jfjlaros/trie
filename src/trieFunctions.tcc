@@ -1,10 +1,12 @@
 #ifndef TRIE_TRIE_FUNCTIONS_TCC_
 #define TRIE_TRIE_FUNCTIONS_TCC_
 
+#include <map>
 #include <vector>
 
 #include "node.tcc"
 
+using std::pair;
 using std::vector;
 
 
@@ -190,23 +192,58 @@ void _hamming(
     return;
   }
   if (position == word.size()) {
-    if (node->leaf) {
+    if (!distance && node->leaf) {
       visit(path, *node->leaf, result);
     }
     return;
   }
 
-  for (size_t i = 0; i < alphabetSize; i++) {
+  for (uint8_t i = word[position]; i < alphabetSize; i++) {
     if (node->child[i]) {
-      int penalty = 0;
-      if (i != word[position]) {
-        penalty = 1;
-      }
       path.push_back(i);
       _hamming(
-        node->child[i], word, position + 1, distance - penalty, path, visit,
-        result);
+        node->child[i], word, position + 1,
+        distance - (uint8_t)(i != word[position]), path, visit, result);
       path.pop_back();
+    }
+  }
+}
+
+template <uint8_t alphabetSize, class T>
+generator<pair<vector<uint8_t>, T>> _walk(
+    Node<alphabetSize, T>* node, vector<uint8_t>& path) {
+  if (!node->leaf) {
+    for (size_t i = 0; i < alphabetSize; i++) {
+      if (node->child[i]) {
+        path.push_back(i);
+        co_yield _walk(node->child[i], path);
+        path.pop_back();
+      }
+    }
+  }
+  else {
+    co_yield pair(path, *node->leaf);
+  }
+}
+
+template <uint8_t alphabetSize, class T>
+generator<pair<vector<uint8_t>, T>> _hamming(
+    Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position,
+    int distance, vector<uint8_t>& path) {
+  if (distance >= 0) {
+    if (position < word.size()) {
+      for (uint8_t i = word[position]; i < alphabetSize; i++) {
+        if (node->child[i]) {
+          path.push_back(i);
+          co_yield _hamming(
+            node->child[i], word, position + 1,
+            distance - (uint8_t)(i != word[position]), path);
+          path.pop_back();
+        }
+      }
+    }
+    else {
+      co_yield pair(path, *node->leaf);
     }
   }
 }
