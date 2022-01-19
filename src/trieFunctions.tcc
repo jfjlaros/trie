@@ -1,13 +1,19 @@
-#ifndef TRIE_TRIE_FUNCTIONS_TCC_
-#define TRIE_TRIE_FUNCTIONS_TCC_
+#pragma once
 
-#include <map>
 #include <vector>
 
 #include "node.tcc"
 
-using std::pair;
 using std::vector;
+
+/*!
+ * Result.
+ */
+template <class T>
+struct Result {
+  vector<uint8_t> path;
+  T* leaf;
+};
 
 
 /*
@@ -53,19 +59,6 @@ T* _add(Node<alphabetSize, T>* node, vector<uint8_t>& word) {
 }
 
 /*
- * Add a word to a (sub)trie.
- *
- * \param node Root.
- * \param word Word.
- * \param data Data.
- */
-template <uint8_t alphabetSize, class T, class U>
-void _add(Node<alphabetSize, T>* node, vector<uint8_t>& word, U& data) {
-  T* leaf = _add(node, word);
-  leaf->add(data);
-}
-
-/*
  * Remove a word from a (sub)trie.
  *
  * \param node Root.
@@ -80,7 +73,6 @@ bool _remove(
   if (position == word.size()) {
     if (node->leaf) {
       node->leaf->count--;
-      node->leaf->remove();
       if (!node->leaf->count) {
         delete node->leaf;
         node->leaf = NULL;
@@ -129,88 +121,12 @@ Node<alphabetSize, T>* _find(
  * Traverse a (sub)trie.
  *
  * \param node Root.
- * \param word Word.
- * \param visit Callback function.
- * \param result Traversal result.
- */
-template <uint8_t alphabetSize, class T, class R>
-void _traverse(
-    Node<alphabetSize, T>* node, vector<uint8_t>& word,
-    void (*visit)(vector<uint8_t>&, T&, R&), R& result) {
-  if (node->leaf) {
-    visit(word, *node->leaf, result);
-  }
-  for (size_t i = 0; i < alphabetSize; i++) {
-    if (node->child[i]) {
-      word.push_back(i);
-      _traverse(node->child[i], word, visit, result);
-      word.pop_back();
-    }
-  }
-}
-
-/*
- * Traverse a (sub)trie.
- *
- * \param node Root.
- * \param word Word.
- * \param visit Callback function.
- */
-template <uint8_t alphabetSize, class T>
-void _traverse(
-    Node<alphabetSize, T>* node, vector<uint8_t>& word,
-    void (*visit)(vector<uint8_t>&, T&)) {
-  if (node->leaf) {
-    visit(word, *node->leaf);
-  }
-  for (size_t i = 0; i < alphabetSize; i++) {
-    if (node->child[i]) {
-      word.push_back(i);
-      _traverse(node->child[i], word, visit);
-      word.pop_back();
-    }
-  }
-}
-
-/*
- * Find all words within Hamming distance `distance`.
- *
- * \param node Root.
- * \param word Word.
- * \param position Position in `word`.
- * \param distance Maximum distance.
  * \param path Path.
- * \param visit Callback function.
- * \param result Traversal result.
+ *
+ * \return Traversal results.
  */
-template <uint8_t alphabetSize, class T, class R>
-void _hamming(
-    Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position,
-    int distance, vector<uint8_t>& path,
-    void (*visit)(vector<uint8_t>&, T&, R&), R& result) {
-  if (distance < 0) {
-    return;
-  }
-  if (position == word.size()) {
-    if (!distance && node->leaf) {
-      visit(path, *node->leaf, result);
-    }
-    return;
-  }
-
-  for (uint8_t i = word[position]; i < alphabetSize; i++) {
-    if (node->child[i]) {
-      path.push_back(i);
-      _hamming(
-        node->child[i], word, position + 1,
-        distance - (uint8_t)(i != word[position]), path, visit, result);
-      path.pop_back();
-    }
-  }
-}
-
 template <uint8_t alphabetSize, class T>
-generator<pair<vector<uint8_t>, T>> _walk(
+generator<Result<T>> _walk(
     Node<alphabetSize, T>* node, vector<uint8_t>& path) {
   if (!node->leaf) {
     for (size_t i = 0; i < alphabetSize; i++) {
@@ -222,12 +138,24 @@ generator<pair<vector<uint8_t>, T>> _walk(
     }
   }
   else {
-    co_yield pair(path, *node->leaf);
+    Result<T> result = {path, node->leaf};
+    co_yield result;
   }
 }
 
+/*
+ * Find all words within Hamming distance `distance` of `word`.
+ *
+ * \param node Root.
+ * \param word Word.
+ * \param position Position in `word`.
+ * \param distance Maximum distance.
+ * \param path Path.
+ *
+ * \return Traversal results.
+ */
 template <uint8_t alphabetSize, class T>
-generator<pair<vector<uint8_t>, T>> _hamming(
+generator<Result<T>> _hamming(
     Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position,
     int distance, vector<uint8_t>& path) {
   if (distance >= 0) {
@@ -243,9 +171,8 @@ generator<pair<vector<uint8_t>, T>> _hamming(
       }
     }
     else {
-      co_yield pair(path, *node->leaf);
+      Result<T> result = {path, node->leaf};
+      co_yield result;
     }
   }
 }
-
-#endif

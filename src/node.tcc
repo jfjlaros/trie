@@ -1,16 +1,19 @@
-#ifndef TRIE_NODE_TCC_
-#define TRIE_NODE_TCC_
+#pragma once
 
 #include <array>
-#include <forward_list>
 
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "leaf.tcc"
-
 using std::array;
 
+
+/*!
+ * Leaf.
+ */
+struct Leaf {
+  size_t count = 0;
+};
 
 /*!
  * Node.
@@ -53,5 +56,3 @@ bool Node<alphabetSize, T>::isEmpty(void) {
   }
   return true;
 }
-
-#endif
