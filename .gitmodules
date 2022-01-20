@@ -1,3 +1,3 @@
-[submodule "src/CPP20Coroutines"]
-	path = src/CPP20Coroutines
+[submodule "lib/CPP20Coroutines"]
+	path = lib/CPP20Coroutines
 	url = https://github.com/Eren121/CPP20Coroutines

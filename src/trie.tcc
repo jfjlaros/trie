@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CPP20Coroutines/include/generator.hpp"
+#include "../lib/CPP20Coroutines/include/generator.hpp"
 
 #include "trieFunctions.tcc"
 

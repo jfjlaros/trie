@@ -1,6 +1,6 @@
 EXEC := test
 MAIN := test.cc
-LIBS := ../lib/ngs/ngs
+LIBS :=
 
 CC := g++
 CC_ARGS := -O2 -fcoroutines -std=c++20
