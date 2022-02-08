@@ -1,3 +1,4 @@
 *.o
 *.swp
 examples/test/test
+tests/run_tests

@@ -19,7 +19,29 @@ struct Leaf {
  * Node.
  */
 template <uint8_t alphabetSize, class T>
-struct Node {
-  array<Node*, alphabetSize> child = {};
-  T* leaf = NULL;
+class Node {
+  public:
+    array<Node*, alphabetSize> child = {};
+    T* leaf = NULL;
+
+    bool isEmpty(void);
 };
+
+
+/*!
+ * Check whether a node neither has any children, nor a leaf.
+ *
+ * \return True is the node is empty, false otherwise.
+ */
+template <uint8_t alphabetSize, class T>
+bool Node<alphabetSize, T>::isEmpty(void) {
+  if (leaf) {
+    return false;
+  }
+  for (Node* node: child) {
+    if (node) {
+      return false;
+    }
+  }
+  return true;
+}

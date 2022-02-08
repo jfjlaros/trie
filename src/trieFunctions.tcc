@@ -76,8 +76,8 @@ bool _remove(
       if (!node->leaf->count) {
         delete node->leaf;
         node->leaf = NULL;
+        return true;
       }
-      return true;
     }
     return false;
   }
