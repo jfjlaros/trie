@@ -10,12 +10,12 @@
 template <uint8_t alphabetSize, class T>
 class Trie {
   public:
-    Trie(void);
-    ~Trie(void);
+    Trie();
+    ~Trie();
     T* add(vector<uint8_t>&);
     void remove(vector<uint8_t>&);
     Node<alphabetSize, T>* find(vector<uint8_t>&);
-    generator<Result<T>> walk(void);
+    generator<Result<T>> walk();
     generator<Result<T>> hamming(vector<uint8_t>&, int);
 
   private:
@@ -27,7 +27,7 @@ class Trie {
  * Constructor.
  */
 template <uint8_t alphabetSize, class T>
-Trie<alphabetSize, T>::Trie(void) {
+Trie<alphabetSize, T>::Trie() {
   _root = new Node<alphabetSize, T>;
 }
 
@@ -35,7 +35,7 @@ Trie<alphabetSize, T>::Trie(void) {
  * Destructor.
  */
 template <uint8_t alphabetSize, class T>
-Trie<alphabetSize, T>::~Trie(void) {
+Trie<alphabetSize, T>::~Trie() {
   _delete(_root);
 }
 
@@ -79,7 +79,7 @@ Node<alphabetSize, T>* Trie<alphabetSize, T>::find(vector<uint8_t>& word) {
  * \return Traversal results.
  */
 template <uint8_t alphabetSize, class T>
-generator<Result<T>> Trie<alphabetSize, T>::walk(void) {
+generator<Result<T>> Trie<alphabetSize, T>::walk() {
   vector<uint8_t> path;
   co_yield _walk(_root, path);
 }

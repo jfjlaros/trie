@@ -62,7 +62,7 @@ TEST_CASE("No prefixes remaining", "[remove]") {
 
   Node<4, Leaf>* node = trie.find(prefix);
   REQUIRE(node == NULL);
-  
+
   prefix = {0x00};
   node = trie.find(prefix);
   REQUIRE(node == NULL);

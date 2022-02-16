@@ -21,7 +21,7 @@ void assignCluster(NLeaf* leaf, size_t cluster) {
 }
 
 
-int main(void) {
+int main() {
   Trie<4, NLeaf> trie;
 
   vector<vector<uint8_t>> words = {
