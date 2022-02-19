@@ -17,6 +17,9 @@ class Trie {
     Node<alphabetSize, T>* find(vector<uint8_t>&);
     generator<Result<T>> walk();
     generator<Result<T>> hamming(vector<uint8_t>&, int);
+    generator<Result<T>> asymmetricHamming(vector<uint8_t>&, int);
+    generator<Result<T>> levenshtein(vector<uint8_t>&, int);
+    generator<Result<T>> asymmetricLevenshtein(vector<uint8_t>&, int);
 
   private:
     Node<alphabetSize, T>* _root = NULL;
@@ -96,5 +99,50 @@ template <uint8_t alphabetSize, class T>
 generator<Result<T>> Trie<alphabetSize, T>::hamming(
     vector<uint8_t>& word, int distance) {
   vector<uint8_t> path;
-  co_yield _hamming(_root, word, 0, distance, path);
+  co_yield _hamming<alphabetSize, T, true>(_root, word, 0, distance, path);
+}
+
+/*!
+ * Asymmetric Hamming.
+ *
+ * \param word Word.
+ * \param distance Maximum distance.
+ *
+ * \return Traversal results.
+ */
+template <uint8_t alphabetSize, class T>
+generator<Result<T>> Trie<alphabetSize, T>::asymmetricHamming(
+    vector<uint8_t>& word, int distance) {
+  vector<uint8_t> path;
+  co_yield _hamming<alphabetSize, T, false>(_root, word, 0, distance, path);
+}
+
+/*!
+ * Levenshtein.
+ *
+ * \param word Word.
+ * \param distance Maximum distance.
+ *
+ * \return Traversal results.
+ */
+template <uint8_t alphabetSize, class T>
+generator<Result<T>> Trie<alphabetSize, T>::levenshtein(
+    vector<uint8_t>& word, int distance) {
+  vector<uint8_t> path;
+  co_yield _levenshtein<alphabetSize, T, true>(_root, word, 0, distance, path);
+}
+
+/*!
+ * Asymmetric Levenshtein.
+ *
+ * \param word Word.
+ * \param distance Maximum distance.
+ *
+ * \return Traversal results.
+ */
+template <uint8_t alphabetSize, class T>
+generator<Result<T>> Trie<alphabetSize, T>::asymmetricLevenshtein(
+    vector<uint8_t>& word, int distance) {
+  vector<uint8_t> path;
+  co_yield _levenshtein<alphabetSize, T, false>(_root, word, 0, distance, path);
 }

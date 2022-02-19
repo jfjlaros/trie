@@ -128,18 +128,16 @@ Node<alphabetSize, T>* _find(
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> _walk(
     Node<alphabetSize, T>* node, vector<uint8_t>& path) {
-  if (!node->leaf) {
-    for (size_t i = 0; i < alphabetSize; i++) {
-      if (node->child[i]) {
-        path.push_back(i);
-        co_yield _walk(node->child[i], path);
-        path.pop_back();
-      }
-    }
-  }
-  else {
+  if (node->leaf) {
     Result<T> result = {path, node->leaf};
     co_yield result;
+  }
+  for (size_t i = 0; i < alphabetSize; i++) {
+    if (node->child[i]) {
+      path.push_back(i);
+      co_yield _walk(node->child[i], path);
+      path.pop_back();
+    }
   }
 }
 
@@ -154,16 +152,20 @@ generator<Result<T>> _walk(
  *
  * \return Traversal results.
  */
-template <uint8_t alphabetSize, class T>
+template <uint8_t alphabetSize, class T, bool full>
 generator<Result<T>> _hamming(
     Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position,
     int distance, vector<uint8_t>& path) {
   if (distance >= 0) {
     if (position < word.size()) {
-      for (uint8_t i = word[position]; i < alphabetSize; i++) {
+      uint8_t start = 0;
+      if (!full) {
+        start = word[position];
+      }
+      for (uint8_t i = start; i < alphabetSize; i++) {
         if (node->child[i]) {
           path.push_back(i);
-          co_yield _hamming(
+          co_yield _hamming<alphabetSize, T, full>(
             node->child[i], word, position + 1,
             distance - (uint8_t)(i != word[position]), path);
           path.pop_back();
@@ -171,6 +173,58 @@ generator<Result<T>> _hamming(
       }
     }
     else {
+      Result<T> result = {path, node->leaf};
+      co_yield result;
+    }
+  }
+}
+
+/*
+ * Find all words within Levenshtein distance `distance` of `word`.
+ *
+ * \tparam full
+ *
+ * \param node Root.
+ * \param word Word.
+ * \param position Position in `word`.
+ * \param distance Maximum distance.
+ * \param path Path.
+ *
+ * \return Traversal results.
+ */
+template <uint8_t alphabetSize, class T, bool full=true>
+generator<Result<T>> _levenshtein(
+    Node<alphabetSize, T>* node, vector<uint8_t>& word, size_t position,
+    int distance, vector<uint8_t>& path) {
+  if (distance >= 0) {
+    // Deletion.
+    co_yield _levenshtein<alphabetSize, T, full>(
+      node, word, position + 1, distance - 1, path);
+
+    uint8_t start = 0;
+    if (!full && position < word.size()) {
+      start = word[position];
+    }
+    for (uint8_t i = start; i < alphabetSize; i++) {
+      if (node->child[i]) {
+        path.push_back(i);
+
+        // Substitution.
+        if (position < word.size()) {
+          co_yield _levenshtein<alphabetSize, T, full>(
+            node->child[i], word, position + 1,
+            distance - (uint8_t)(i != word[position]), path);
+        }
+
+        // Insertion.
+        co_yield _levenshtein<alphabetSize, T, full>(
+          node->child[i], word, position, distance - 1, path);
+
+        path.pop_back();
+      }
+    }
+    
+    if (position >= word.size() && node->leaf) {
       Result<T> result = {path, node->leaf};
       co_yield result;
     }
