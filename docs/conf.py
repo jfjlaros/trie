@@ -8,7 +8,7 @@ copyright = '2022, {}'.format(author)
 extensions = ['breathe']
 breathe_projects = {'doxygen': 'xml'}
 breathe_default_project = 'doxygen'
-breathe_default_members = ['members']
+breathe_default_members = ('members')
 
 master_doc = 'index'
 

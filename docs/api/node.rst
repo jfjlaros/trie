@@ -18,5 +18,5 @@ Leaf
 Class definition
 ----------------
 
-.. doxygenclass:: Leaf
+.. doxygenstruct:: Leaf
    :members:
