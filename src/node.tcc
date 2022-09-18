@@ -22,9 +22,9 @@ template <uint8_t alphabetSize, class T>
 class Node {
   public:
     array<Node*, alphabetSize> child = {};
-    T* leaf = NULL;
+    T* leaf = nullptr;
 
-    bool isEmpty();
+    bool isEmpty() const;
 };
 
 
@@ -34,7 +34,7 @@ class Node {
  * \return True is the node is empty, false otherwise.
  */
 template <uint8_t alphabetSize, class T>
-bool Node<alphabetSize, T>::isEmpty() {
+bool Node<alphabetSize, T>::isEmpty() const {
   if (leaf) {
     return false;
   }

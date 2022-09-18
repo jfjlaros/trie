@@ -1,9 +1,7 @@
 #include <catch.hpp>
 #include <vector>
 
-#define private public
 #include "../src/trie.tcc"
-#undef private
 
 using std::vector;
 
@@ -16,10 +14,10 @@ TEST_CASE("Internal remove function", "[remove]") {
   trie.add(word);
 
   word = {0x00, 0x01};
-  REQUIRE(_remove(trie._root, word, 0) == false);
+  REQUIRE(remove_(trie.root_, word, 0) == false);
 
   word = {0x00, 0x01, 0x02};
-  REQUIRE(_remove(trie._root, word, 0) == false);
-  REQUIRE(_remove(trie._root, word, 0) == true);
-  REQUIRE(_remove(trie._root, word, 0) == false);
+  REQUIRE(remove_(trie.root_, word, 0) == false);
+  REQUIRE(remove_(trie.root_, word, 0) == true);
+  REQUIRE(remove_(trie.root_, word, 0) == false);
 }

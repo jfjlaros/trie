@@ -5,7 +5,7 @@ FIXTURES :=
 
 
 CC := g++
-CC_ARGS := -std=c++20 -fcoroutines -Wno-pmf-conversions
+CC_ARGS := -std=c++20 -Wall -Wextra -pedantic -fcoroutines -fno-access-control
 
 
 OBJS := $(addsuffix .o, $(TESTS) $(FIXTURES))

@@ -3,7 +3,7 @@ MAIN := test.cc
 LIBS :=
 
 CC := g++
-CC_ARGS := -O2 -fcoroutines -std=c++20
+CC_ARGS := -std=c++20 -Wall -Wextra -pedantic -fcoroutines -O2
 
 
 OBJS := $(addsuffix .o, $(LIBS))
