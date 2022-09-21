@@ -9,8 +9,6 @@
  */
 template <uint8_t alphabetSize, class T>
 class Trie {
-  Node<alphabetSize, T>* root_ = nullptr;
-
 public:
   Trie();
   ~Trie();
@@ -25,6 +23,9 @@ public:
   generator<Result<T>> levenshtein(vector<uint8_t> const&, int const) const;
   generator<Result<T>> asymmetricLevenshtein(
     vector<uint8_t> const&, int const) const;
+
+private:
+  Node<alphabetSize, T>* root_ = nullptr;
 };
 
 

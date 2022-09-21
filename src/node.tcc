@@ -20,11 +20,11 @@ struct Leaf {
  */
 template <uint8_t alphabetSize, class T>
 class Node {
-  public:
-    array<Node*, alphabetSize> child = {};
-    T* leaf = nullptr;
+public:
+  bool isEmpty() const;
 
-    bool isEmpty() const;
+  array<Node*, alphabetSize> child = {};
+  T* leaf = nullptr;
 };
 
 
