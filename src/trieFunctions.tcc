@@ -6,8 +6,9 @@
 
 using std::vector;
 
-/*!
- * Result.
+/*! Result.
+ *
+ * \tparam T Leaf type.
  */
 template <class T>
 struct Result {
@@ -16,8 +17,10 @@ struct Result {
 };
 
 
-/*
- * Delete a (sub)trie.
+/* Delete a (sub)trie.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
  *
  * \param node Root.
  */
@@ -34,8 +37,10 @@ void delete_(Node<alphabetSize, T>* const node) {
   delete node;
 }
 
-/*
- * Add a word to a (sub)trie.
+/* Add a word to a (sub)trie.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
  *
  * \param node Root.
  * \param word Word.
@@ -45,12 +50,12 @@ void delete_(Node<alphabetSize, T>* const node) {
 template <uint8_t alphabetSize, class T>
 T* add_(Node<alphabetSize, T>* node, vector<uint8_t> const& word) {
   for (uint8_t const& letter: word) {
-    if (!node->child[letter]) {
+    if (not node->child[letter]) {
       node->child[letter] = new Node<alphabetSize, T>;
     }
     node = node->child[letter];
   }
-  if (!node->leaf) {
+  if (not node->leaf) {
     node->leaf = new T;
   }
   node->leaf->count++;
@@ -58,8 +63,10 @@ T* add_(Node<alphabetSize, T>* node, vector<uint8_t> const& word) {
   return node->leaf;
 }
 
-/*
- * Remove a word from a (sub)trie.
+/* Remove a word from a (sub)trie.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
  *
  * \param node Root.
  * \param word Word.
@@ -74,7 +81,7 @@ bool remove_(
   if (position == word.size()) {
     if (node->leaf) {
       node->leaf->count--;
-      if (!node->leaf->count) {
+      if (not node->leaf->count) {
         delete node->leaf;
         node->leaf = nullptr;
         return true;
@@ -83,11 +90,11 @@ bool remove_(
     return false;
   }
 
-  if (!node->child[word[position]]) {
+  if (not node->child[word[position]]) {
     return false;
   }
 
-  bool result = remove_(node->child[word[position]], word, position + 1);
+  bool result {remove_(node->child[word[position]], word, position + 1)};
   if (result) {
     if (node->child[word[position]]->isEmpty()) {
       delete node->child[word[position]];
@@ -98,8 +105,10 @@ bool remove_(
   return result;
 }
 
-/*
- * Find a word in a (sub)trie.
+/* Find a word in a (sub)trie.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
  *
  * \param node Root.
  * \param word Word.
@@ -110,7 +119,7 @@ template <uint8_t alphabetSize, class T>
 Node<alphabetSize, T>* find_(
     Node<alphabetSize, T>* node, vector<uint8_t> const& word) {
   for (uint8_t const& letter: word) {
-    if (!node->child[letter]) {
+    if (not node->child[letter]) {
       return nullptr;
     }
     node = node->child[letter];
@@ -118,8 +127,10 @@ Node<alphabetSize, T>* find_(
   return node;
 }
 
-/*
- * Traverse a (sub)trie.
+/* Traverse a (sub)trie.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
  *
  * \param node Root.
  * \param path Path.
@@ -130,10 +141,10 @@ template <uint8_t alphabetSize, class T>
 generator<Result<T>> walk_(
     Node<alphabetSize, T> const* const node, vector<uint8_t>& path) {
   if (node->leaf) {
-    Result<T> result = {path, node->leaf};
+    Result<T> result {path, node->leaf};
     co_yield result;
   }
-  for (size_t i = 0; i < alphabetSize; i++) {
+  for (size_t i {0}; i < alphabetSize; i++) {
     if (node->child[i]) {
       path.push_back(i);
       co_yield walk_(node->child[i], path);
@@ -142,8 +153,11 @@ generator<Result<T>> walk_(
   }
 }
 
-/*
- * Find all words within Hamming distance `distance` of `word`.
+/* Find all words within Hamming distance `distance` of `word`.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
+ * \tparam full Full traversal.
  *
  * \param node Root.
  * \param word Word.
@@ -159,31 +173,32 @@ generator<Result<T>> hamming_(
     size_t const position, int const distance, vector<uint8_t>& path) {
   if (distance >= 0) {
     if (position < word.size()) {
-      uint8_t start = 0;
-      if (!full) {
+      uint8_t start {0};
+      if (not full) {
         start = word[position];
       }
-      for (uint8_t i = start; i < alphabetSize; i++) {
+      for (uint8_t i {start}; i < alphabetSize; i++) {
         if (node->child[i]) {
           path.push_back(i);
           co_yield hamming_<alphabetSize, T, full>(
             node->child[i], word, position + 1,
-            distance - (uint8_t)(i != word[position]), path);
+            distance - (i != word[position]), path);
           path.pop_back();
         }
       }
     }
     else {
-      Result<T> result = {path, node->leaf};
+      Result<T> result {path, node->leaf};
       co_yield result;
     }
   }
 }
 
-/*
- * Find all words within Levenshtein distance `distance` of `word`.
+/* Find all words within Levenshtein distance `distance` of `word`.
  *
- * \tparam full
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
+ * \tparam full Full traversal.
  *
  * \param node Root.
  * \param word Word.
@@ -202,11 +217,11 @@ generator<Result<T>> levenshtein_(
     co_yield levenshtein_<alphabetSize, T, full>(
       node, word, position + 1, distance - 1, path);
 
-    uint8_t start = 0;
-    if (!full && position < word.size()) {
+    uint8_t start {0};
+    if (not full and position < word.size()) {
       start = word[position];
     }
-    for (uint8_t i = start; i < alphabetSize; i++) {
+    for (uint8_t i {start}; i < alphabetSize; i++) {
       if (node->child[i]) {
         path.push_back(i);
 
@@ -214,7 +229,7 @@ generator<Result<T>> levenshtein_(
         if (position < word.size()) {
           co_yield levenshtein_<alphabetSize, T, full>(
             node->child[i], word, position + 1,
-            distance - (uint8_t)(i != word[position]), path);
+            distance - (i != word[position]), path);
         }
 
         // Insertion.
@@ -225,8 +240,8 @@ generator<Result<T>> levenshtein_(
       }
     }
     
-    if (position >= word.size() && node->leaf) {
-      Result<T> result = {path, node->leaf};
+    if (position >= word.size() and node->leaf) {
+      Result<T> result {path, node->leaf};
       co_yield result;
     }
   }

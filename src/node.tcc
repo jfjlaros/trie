@@ -8,28 +8,27 @@
 using std::array;
 
 
-/*!
- * Leaf.
- */
+/*! Leaf. */
 struct Leaf {
-  size_t count = 0;
+  size_t count {0};  //!< Counter.
 };
 
-/*!
- * Node.
+/*! Node.
+ *
+ * \tparam alphabetSize Size of the alphabet.
+ * \tparam T Leaf type.
  */
 template <uint8_t alphabetSize, class T>
 class Node {
 public:
   bool isEmpty() const;
 
-  array<Node*, alphabetSize> child = {};
-  T* leaf = nullptr;
+  array<Node*, alphabetSize> child {};  //!< Children.
+  T* leaf {nullptr};                    //!< Leaf.
 };
 
 
-/*!
- * Check whether a node neither has any children, nor a leaf.
+/*! Check whether a node neither has any children, nor a leaf.
  *
  * \return True is the node is empty, false otherwise.
  */

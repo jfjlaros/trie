@@ -14,13 +14,13 @@ TEST_CASE("Node", "[node]") {
     Leaf leaf;
     node.leaf = &leaf;
 
-    REQUIRE(!node.isEmpty());
+    REQUIRE(not node.isEmpty());
   }
 
   SECTION("Internal node") {
     Node<4, Leaf> child;
     node.child[3] = &child;
   
-    REQUIRE(!node.isEmpty());
+    REQUIRE(not node.isEmpty());
   }
 }

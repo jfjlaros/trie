@@ -9,7 +9,7 @@ using std::vector;
 TEST_CASE("Internal remove function", "[remove]") {
   Trie<4, Leaf> trie;
 
-  vector<uint8_t> word = {0x00, 0x01, 0x02};
+  vector<uint8_t> word {0x00, 0x01, 0x02};
   trie.add(word);
   trie.add(word);
 
