@@ -14,10 +14,10 @@ TEST_CASE("Internal remove function", "[remove]") {
   trie.add(word);
 
   word = {0x00, 0x01};
-  REQUIRE(remove_(trie.root_, word, 0) == false);
+  REQUIRE(remove_(trie.root_.get(), word, 0) == false);
 
   word = {0x00, 0x01, 0x02};
-  REQUIRE(remove_(trie.root_, word, 0) == false);
-  REQUIRE(remove_(trie.root_, word, 0) == true);
-  REQUIRE(remove_(trie.root_, word, 0) == false);
+  REQUIRE(remove_(trie.root_.get(), word, 0) == false);
+  REQUIRE(remove_(trie.root_.get(), word, 0) == true);
+  REQUIRE(remove_(trie.root_.get(), word, 0) == false);
 }

@@ -1,11 +1,13 @@
 #pragma once
 
 #include <array>
+#include <memory>
 
 #include <stdlib.h>
 #include <stdint.h>
 
 using std::array;
+using std::unique_ptr;
 
 
 /*! Leaf. */
@@ -23,8 +25,8 @@ class Node {
 public:
   bool isEmpty() const;
 
-  array<Node*, alphabetSize> child {};  //!< Children.
-  T* leaf {nullptr};                    //!< Leaf.
+  array<unique_ptr<Node>, alphabetSize> child {};  //!< Children.
+  unique_ptr<T> leaf {nullptr};                    //!< Leaf.
 };
 
 
@@ -37,7 +39,7 @@ bool Node<alphabetSize, T>::isEmpty() const {
   if (leaf) {
     return false;
   }
-  for (Node* node: child) {
+  for (auto const& node : child) {
     if (node) {
       return false;
     }

@@ -4,6 +4,7 @@
 
 #include "node.tcc"
 
+using std::make_unique;
 using std::vector;
 
 /*! Result.
@@ -17,26 +18,6 @@ struct Result {
 };
 
 
-/* Delete a (sub)trie.
- *
- * \tparam alphabetSize Size of the alphabet.
- * \tparam T Leaf type.
- *
- * \param node Root.
- */
-template <uint8_t alphabetSize, class T>
-void delete_(Node<alphabetSize, T>* const node) {
-  for (Node<alphabetSize, T>* const child: node->child) {
-    if (child) {
-      delete_(child);
-    }
-  }
-  if (node->leaf) {
-    delete node->leaf;
-  }
-  delete node;
-}
-
 /* Add a word to a (sub)trie.
  *
  * \tparam alphabetSize Size of the alphabet.
@@ -48,19 +29,20 @@ void delete_(Node<alphabetSize, T>* const node) {
  * \return Leaf.
  */
 template <uint8_t alphabetSize, class T>
-T* add_(Node<alphabetSize, T>* node, vector<uint8_t> const& word) {
-  for (uint8_t const& letter: word) {
-    if (not node->child[letter]) {
-      node->child[letter] = new Node<alphabetSize, T>;
+T* add_(Node<alphabetSize, T>* const node, vector<uint8_t> const& word) {
+  auto node_ {node};
+  for (auto const& letter: word) {
+    if (not node_->child[letter]) {
+      node_->child[letter] = make_unique<Node<alphabetSize, T>>();
     }
-    node = node->child[letter];
+    node_ = node_->child[letter].get();
   }
-  if (not node->leaf) {
-    node->leaf = new T;
+  if (not node_->leaf) {
+    node_->leaf = make_unique<T>();
   }
-  node->leaf->count++;
+  node_->leaf->count++;
 
-  return node->leaf;
+  return node_->leaf.get();
 }
 
 /* Remove a word from a (sub)trie.
@@ -82,8 +64,7 @@ bool remove_(
     if (node->leaf) {
       node->leaf->count--;
       if (not node->leaf->count) {
-        delete node->leaf;
-        node->leaf = nullptr;
+        node->leaf.reset();
         return true;
       }
     }
@@ -94,11 +75,10 @@ bool remove_(
     return false;
   }
 
-  bool result {remove_(node->child[word[position]], word, position + 1)};
+  auto result {remove_(node->child[word[position]].get(), word, position + 1)};
   if (result) {
     if (node->child[word[position]]->isEmpty()) {
-      delete node->child[word[position]];
-      node->child[word[position]] = nullptr;
+      node->child[word[position]].reset();
     }
   }
 
@@ -117,14 +97,15 @@ bool remove_(
  */
 template <uint8_t alphabetSize, class T>
 Node<alphabetSize, T>* find_(
-    Node<alphabetSize, T>* node, vector<uint8_t> const& word) {
-  for (uint8_t const& letter: word) {
-    if (not node->child[letter]) {
+    Node<alphabetSize, T>* const node, vector<uint8_t> const& word) {
+  auto node_ {node};
+  for (auto const& letter: word) {
+    if (not node_->child[letter]) {
       return nullptr;
     }
-    node = node->child[letter];
+    node_ = node_->child[letter].get();
   }
-  return node;
+  return node_;
 }
 
 /* Traverse a (sub)trie.
@@ -139,15 +120,15 @@ Node<alphabetSize, T>* find_(
  */
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> walk_(
-    Node<alphabetSize, T> const* const node, vector<uint8_t>& path) {
+    Node<alphabetSize, T>* const node, vector<uint8_t>& path) {
   if (node->leaf) {
-    Result<T> result {path, node->leaf};
+    Result<T> result {path, node->leaf.get()};
     co_yield result;
   }
   for (size_t i {0}; i < alphabetSize; i++) {
     if (node->child[i]) {
       path.push_back(i);
-      co_yield walk_(node->child[i], path);
+      co_yield walk_(node->child[i].get(), path);
       path.pop_back();
     }
   }
@@ -169,8 +150,9 @@ generator<Result<T>> walk_(
  */
 template <uint8_t alphabetSize, class T, bool full>
 generator<Result<T>> hamming_(
-    Node<alphabetSize, T> const* const node, vector<uint8_t> const& word,
-    size_t const position, int const distance, vector<uint8_t>& path) {
+    Node<alphabetSize, T> const* const node,
+    vector<uint8_t> const& word, size_t const position, int const distance,
+    vector<uint8_t>& path) {
   if (distance >= 0) {
     if (position < word.size()) {
       uint8_t start {0};
@@ -181,14 +163,14 @@ generator<Result<T>> hamming_(
         if (node->child[i]) {
           path.push_back(i);
           co_yield hamming_<alphabetSize, T, full>(
-            node->child[i], word, position + 1,
+            node->child[i].get(), word, position + 1,
             distance - (i != word[position]), path);
           path.pop_back();
         }
       }
     }
     else {
-      Result<T> result {path, node->leaf};
+      Result<T> result {path, node->leaf.get()};
       co_yield result;
     }
   }
@@ -228,20 +210,20 @@ generator<Result<T>> levenshtein_(
         // Substitution.
         if (position < word.size()) {
           co_yield levenshtein_<alphabetSize, T, full>(
-            node->child[i], word, position + 1,
+            node->child[i].get(), word, position + 1,
             distance - (i != word[position]), path);
         }
 
         // Insertion.
         co_yield levenshtein_<alphabetSize, T, full>(
-          node->child[i], word, position, distance - 1, path);
+          node->child[i].get(), word, position, distance - 1, path);
 
         path.pop_back();
       }
     }
     
     if (position >= word.size() and node->leaf) {
-      Result<T> result {path, node->leaf};
+      Result<T> result {path, node->leaf.get()};
       co_yield result;
     }
   }

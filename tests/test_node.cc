@@ -1,6 +1,9 @@
 #include <catch.hpp>
+#include <memory>
 
 #include "../src/node.tcc"
+
+using std::make_unique;
 
 
 TEST_CASE("Node", "[node]") {
@@ -11,15 +14,13 @@ TEST_CASE("Node", "[node]") {
   }
 
   SECTION("Leaf node") {
-    Leaf leaf;
-    node.leaf = &leaf;
+    node.leaf = make_unique<Leaf>();
 
     REQUIRE(not node.isEmpty());
   }
 
   SECTION("Internal node") {
-    Node<4, Leaf> child;
-    node.child[3] = &child;
+    node.child[3] = make_unique<Node<4, Leaf>>();
   
     REQUIRE(not node.isEmpty());
   }

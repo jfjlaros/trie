@@ -12,9 +12,6 @@
 template <uint8_t alphabetSize, class T>
 class Trie {
 public:
-  ~Trie();
-
-
   /*! Add a word.
    *
    * \param word Word.
@@ -82,62 +79,56 @@ public:
     vector<uint8_t> const&, int const) const;
 
 private:
-  Node<alphabetSize, T>* root_ {new Node<alphabetSize, T>};
+  unique_ptr<Node<alphabetSize, T>> root_ {make_unique<Node<alphabetSize, T>>()};
 };
 
 
 template <uint8_t alphabetSize, class T>
-Trie<alphabetSize, T>::~Trie() {
-  delete_(root_);
-}
-
-
-template <uint8_t alphabetSize, class T>
 T* Trie<alphabetSize, T>::add(vector<uint8_t> const& word) const {
-  return add_(root_, word);
+  return add_(root_.get(), word);
 }
 
 template <uint8_t alphabetSize, class T>
 void Trie<alphabetSize, T>::remove(vector<uint8_t> const& word) const {
-  remove_(root_, word, 0);
+  remove_(root_.get(), word, 0);
 }
 
 template <uint8_t alphabetSize, class T>
 Node<alphabetSize, T>* Trie<alphabetSize, T>::find(
     vector<uint8_t> const& word) const {
-  return find_(root_, word);
+  return find_(root_.get(), word);
 }
 
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> Trie<alphabetSize, T>::walk() const {
   vector<uint8_t> path;
-  co_yield walk_(root_, path);
+  co_yield walk_(root_.get(), path);
 }
 
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> Trie<alphabetSize, T>::hamming(
     vector<uint8_t> const& word, int const distance) const {
   vector<uint8_t> path;
-  co_yield hamming_<alphabetSize, T, true>(root_, word, 0, distance, path);
+  co_yield hamming_<alphabetSize, T, true>(root_.get(), word, 0, distance, path);
 }
 
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> Trie<alphabetSize, T>::asymmetricHamming(
     vector<uint8_t> const& word, int const distance) const {
   vector<uint8_t> path;
-  co_yield hamming_<alphabetSize, T, false>(root_, word, 0, distance, path);
+  co_yield hamming_<alphabetSize, T, false>(root_.get(), word, 0, distance, path);
 }
 
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> Trie<alphabetSize, T>::levenshtein(
     vector<uint8_t> const& word, int const distance) const {
   vector<uint8_t> path;
-  co_yield levenshtein_<alphabetSize, T, true>(root_, word, 0, distance, path);
+  co_yield levenshtein_<alphabetSize, T, true>(root_.get(), word, 0, distance, path);
 }
 
 template <uint8_t alphabetSize, class T>
 generator<Result<T>> Trie<alphabetSize, T>::asymmetricLevenshtein(
     vector<uint8_t> const& word, int const distance) const {
   vector<uint8_t> path;
-  co_yield levenshtein_<alphabetSize, T, false>(root_, word, 0, distance, path);
+  co_yield levenshtein_<alphabetSize, T, false>(root_.get(), word, 0, distance, path);
 }
